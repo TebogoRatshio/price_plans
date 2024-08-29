@@ -1,0 +1,39 @@
+### Create a new price plan
+POST http://localhost:4011/api/price_plan/create
+Content-Type: application/json
+
+{
+    "name": "call_kick_100",
+    "call_cost": 2.65,
+    "sms_cost": 0.45
+}
+
+### Get all price plans
+GET http://localhost:4011/api/price_plans
+
+### Update an existing price plan
+POST http://localhost:4011/api/price_plan/update
+Content-Type: application/json
+
+{
+    "name": "sms_kick_100",
+    "call_cost": 3.00,
+    "sms_cost": 0.50
+}
+
+### Calculate the phone bill
+POST http://localhost:4011/api/phonebill
+Content-Type: application/json
+
+{
+    "price_plan": "sms_kick_100",
+    "actions": ["call", "sms", "call"]
+}
+
+### Delete a price plan
+POST http://localhost:4011/api/price_plan/delete
+Content-Type: application/json
+
+{
+    "id": 16
+}

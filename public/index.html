@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Bill API</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="//unpkg.com/alpinejs" defer></script>
+    
+</head>
+<body>
+    <h1>Phone Bill API</h1>
+
+    <div x-data="phoneBillApp()">
+        <!-- Calculate Bill Form -->
+        <div class="form-container">
+            <h2>Calculate Phone Bill Total</h2>
+            <form @submit.prevent="calculateBill">
+                <label for="price-plan">Price Plan:</label>
+                <input type="text" id="price-plan" x-model="pricePlan" required>
+
+                <label for="actions">Actions (comma-separated):</label>
+                <input type="text" id="actions" x-model="actions" required>
+
+                <button type="submit">Calculate</button>
+            </form>
+            <div id="calculate-response" x-text="calculateResponse" class="response"></div>
+        </div>
+
+        <!-- Get Price Plans -->
+        <div class="form-container">
+            <h2>Get Available Price Plans</h2>
+            <button @click="getPricePlans">Get Price Plans</button>
+            <div id="plans-response" x-html="plansResponse" class="response"></div>
+        </div>
+
+        <!-- Create Plan Form -->
+        <div class="form-container">
+            <h2>Create a New Price Plan</h2>
+            <form @submit.prevent="createPlan">
+                <label for="plan-name">Price Plan Name:</label>
+                <input type="text" id="plan-name" x-model="createPlanName" required>
+
+                <label for="call-cost">Call Cost:</label>
+                <input type="number" id="call-cost" x-model="createCallCost" step="0.01" required>
+
+                <label for="sms-cost">SMS Cost:</label>
+                <input type="number" id="sms-cost" x-model="createSmsCost" step="0.01" required>
+
+                <button type="submit">Create Price Plan</button>
+            </form>
+            <div id="create-response" x-text="createResponse" class="response"></div>
+        </div>
+
+        <!-- Update Plan Form -->
+        <div class="form-container">
+            <h2>Update a Price Plan</h2>
+            <form @submit.prevent="updatePlan">
+                <label for="update-plan-name">Price Plan Name:</label>
+                <input type="text" id="update-plan-name" x-model="updatePlanName" required>
+
+                <label for="update-call-cost">Call Cost:</label>
+                <input type="number" id="update-call-cost" x-model="updateCallCost" step="0.01" required>
+
+                <label for="update-sms-cost">SMS Cost:</label>
+                <input type="number" id="update-sms-cost" x-model="updateSmsCost" step="0.01" required>
+
+                <button type="submit">Update Price Plan</button>
+            </form>
+            <div id="update-response" x-text="updateResponse" class="response"></div>
+        </div>
+
+        <!-- Delete Plan Form -->
+        <div class="form-container">
+            <h2>Delete a Price Plan</h2>
+            <form @submit.prevent="deletePlan">
+                <label for="plan-id">Price Plan ID:</label>
+                <input type="number" id="plan-id" x-model="deletePlanId" required>
+
+                <button type="submit">Delete Price Plan</button>
+            </form>
+            <div id="delete-response" x-text="deleteResponse" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        function phoneBillApp() {
+            return {
+                pricePlan: '',
+                actions: '',
+                createPlanName: '',
+                createCallCost: '',
+                createSmsCost: '',
+                updatePlanName: '',
+                updateCallCost: '',
+                updateSmsCost: '',
+                deletePlanId: '',
+                calculateResponse: '',
+                plansResponse: '',
+                createResponse: '',
+                updateResponse: '',
+                deleteResponse: '',
+
+                async calculateBill() {
+                    try {
+                        const response = await fetch('http://127.0.0.1:4011/api/phonebill/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                price_plan: this.pricePlan,
+                                actions: this.actions.split(',').map(action => action.trim())
+                            })
+                        });
+                        const result = await response.json();
+                        this.calculateResponse = `Total: R${result.total}`;
+                    } catch (error) {
+                        this.calculateResponse = 'Error calculating bill';
+                    }
+                },
+
+                async getPricePlans() {
+                    try {
+                        const response = await fetch('http://127.0.0.1:4011/api/price_plans/');
+                        const plans = await response.json();
+                        this.plansResponse = `
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Name</th>
+                                        <th>Call Cost</th>
+                                        <th>SMS Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${plans.map(plan => `
+                                        <tr>
+                                            <td>${plan.id}</td>
+                                            <td>${plan.plan_name}</td>
+                                            <td>R${plan.call_price}</td>
+                                            <td>R${plan.sms_price}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        `;
+                    } catch (error) {
+                        this.plansResponse = 'Error fetching price plans';
+                    }
+                },
+
+                async createPlan() {
+                    try {
+                        const response = await fetch('http://127.0.0.1:4011/api/price_plan/create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: this.createPlanName,
+                                call_cost: parseFloat(this.createCallCost),
+                                sms_cost: parseFloat(this.createSmsCost)
+                            })
+                        });
+                        const result = await response.json();
+                        this.createResponse = result.message;
+                    } catch (error) {
+                        this.createResponse = 'Error creating price plan';
+                    }
+                },
+
+                async updatePlan() {
+                    try {
+                        const response = await fetch('http://127.0.0.1:4011/api/price_plan/update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: this.updatePlanName,
+                                call_cost: parseFloat(this.updateCallCost),
+                                sms_cost: parseFloat(this.updateSmsCost)
+                            })
+                        });
+                        const result = await response.json();
+                        this.updateResponse = result.message;
+                    } catch (error) {
+                        this.updateResponse = 'Error updating price plan';
+                    }
+                },
+
+                async deletePlan() {
+                    try {
+                        const response = await fetch('http://127.0.0.1:4011/api/price_plan/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: parseInt(this.deletePlanId) })
+                        });
+                        const result = await response.json();
+                        this.deleteResponse = result.message;
+                    } catch (error) {
+                        this.deleteResponse = 'Error deleting price plan';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
