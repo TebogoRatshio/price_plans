@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
+
 <body>
     <h1>Phone Bill API</h1>
 
@@ -71,16 +73,19 @@
     </div>
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            //
+        })
         function phoneBillApp() {
-            const RESPONSE_TIMEOUT_DURATION = 5000; 
-    
+            const RESPONSE_TIMEOUT_DURATION = 5000;
+
             function setResponseWithTimeout(property, message) {
                 this[property] = message;
                 setTimeout(() => {
                     this[property] = '';
                 }, RESPONSE_TIMEOUT_DURATION);
             }
-    
+
             return {
                 pricePlan: '',
                 actions: '',
@@ -96,7 +101,7 @@
                 createResponse: '',
                 updateResponse: '',
                 deleteResponse: '',
-    
+
                 async calculateBill() {
                     try {
                         const response = await fetch('http://127.0.0.1:4011/api/phonebill/', {
@@ -113,7 +118,7 @@
                         setResponseWithTimeout.call(this, 'calculateResponse', 'Error calculating bill');
                     }
                 },
-    
+
                 async getPricePlans() {
                     try {
                         const response = await fetch('http://127.0.0.1:4011/api/price_plans/');
@@ -132,8 +137,8 @@
                                 </thead>
                                 <tbody>
                                     ${plans.map(plan => {
-                                        const totalCost = (plan.call_price + plan.sms_price).toFixed(2);
-                                        return `
+                            const totalCost = (plan.call_price + plan.sms_price).toFixed(2);
+                            return `
                                             <tr>
                                                 <td>${plan.id}</td>
                                                 <td>${plan.plan_name}</td>
@@ -145,7 +150,7 @@
                                                 </td>
                                             </tr>
                                         `;
-                                    }).join('')}
+                        }).join('')}
                                 </tbody>
                             </table>
                         `;
@@ -154,7 +159,7 @@
                         setResponseWithTimeout.call(this, 'plansResponse', 'Error fetching price plans');
                     }
                 },
-    
+
                 async createPlan() {
                     try {
                         const response = await fetch('http://127.0.0.1:4011/api/price_plan/create', {
@@ -172,7 +177,7 @@
                         setResponseWithTimeout.call(this, 'createResponse', 'Error creating price plan');
                     }
                 },
-    
+
                 async updatePlan() {
                     try {
                         const response = await fetch('http://127.0.0.1:4011/api/price_plan/update', {
@@ -208,6 +213,7 @@
                 }
             }
         }
-    </script>    
+    </script>
 </body>
+
 </html>
